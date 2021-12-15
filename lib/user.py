@@ -36,6 +36,15 @@ class NginxVisitor:
         return
 
     def set_data(self, method, uri, status, agent, time):
+        '''
+        
+        :param method:
+        :param uri:
+        :param status:
+        :param agent:
+        :param time:
+        :return:
+        '''
         key = len(self.data)
         self.data[key] = {
             "method": method,

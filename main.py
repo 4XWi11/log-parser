@@ -13,13 +13,18 @@ def main():
 ''')
     arg = argparse.ArgumentParser()
     arg.add_argument("--path", help="The log you ready to analyse.", type=str)
-    arg.add_argument("--type", help="0->nginx_log/ 1->apache_log", type=int)
+    arg.add_argument("--type", help="0->apache_log/ 1->apache_log", type=int)
     path = arg.parse_args().path
     log_type = arg.parse_args().type
     log_parser_new = LogParser(path, REGEX[log_type])
     log_parser_new.run()
     print()
 
-if __name__ == '__main__':
-    main()
+def test():
+    log_parser_new = LogParser('access.txt',REGEX[0])
+    log_parser_new.run()
+    return
 
+if __name__ == '__main__':
+    test()
+    # main()

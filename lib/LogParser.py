@@ -1,20 +1,23 @@
 from lib.user import NginxVisitor
 import re
 from config import *
-
+import time
 
 class LogParser:
-
     def __init__(self, log_path, regex):
+        # 同一ip的访问请求，那么就是list中存放dic
         self.path = log_path
         self.regex = regex
         self.content = self.ini_file()
         self.visitor = []
+        self.ipList = {}
+        self.timeList = []
 
     def ini_file(self):
         with open(self.path, "r") as file:
             lines = file.readlines()
         return lines
+
 
     def parser(self):
         """
@@ -23,11 +26,35 @@ class LogParser:
         """
         for line in self.content:
             match_group = re.findall(self.regex, line)
-            ip = match_group[0]
-            time = match_group[1]
-            request = match_group[2]
-            state = match_group[3]
-            user_agent = match_group[5]
+            """
+                print(match_group,len(match_group),type(match_group))
+                print(type(match_group[0]),len(match_group[0]))
+            """
+            tempDic = {}
+
+            try:
+                length = len(match_group[0])
+            except:
+                print('[❌] error logs:',line)
+                continue
+
+            table = ['ip','time','method_and_uri','status','content-length','','user_agent']
+            for i in range(1,length):
+                try:
+                    tempDic[table[i]] = match_group[0][i]
+                except:
+                    print('[❌] error logs:', line)
+                    continue
+
+            ip = match_group[0][0]
+            if ip not in self.ipList.keys():
+                self.ipList[ip] = [tempDic,]
+            else:
+                self.ipList[ip].append(tempDic)
+
+        # print(self.ipList)
+
+
 
     def check(self):
         """

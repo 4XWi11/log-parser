@@ -100,7 +100,7 @@ class LogParser:
         end_time = time.strptime(end_time, "%Y-%m-%d %H:%M:%S")
         end_time = int(time.mktime(end_time))
 
-        self.judge_attack(time_table,start_time,end_time)
+        self.judge_attack(time_table,start_time)
 
         return
 
@@ -119,6 +119,10 @@ class LogParser:
                       13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0,23:0}
         indice = 0
         hour_indice = 0
+
+        if start_time > max(time_table):
+            return
+
         time_temp = time.localtime(start_time)
         time_array = time.strftime("%Y-%m-%d %H:%M:%S", time_temp)
 
@@ -139,6 +143,7 @@ class LogParser:
                 print(f"[✅] {out_time} count : {hour_table[hour_indice]}")
                 hour_indice += 1
                 start_time += 3600
+
         print('--------------------------------')
         return
     def check(self,time_table):

@@ -1,4 +1,3 @@
-from lib.user import NginxVisitor
 import re
 from config import *
 import time
@@ -78,14 +77,20 @@ class LogParser:
             self.ip_isp = ip_data['isp']
             self.ip_city = ip_data['city']
 
-        self.ip_inf_output()
+        self.ip_infor_output()
         return
-    def ip_inf_output(self):
+    def ip_infor_output(self):
         print("[✅]country:",self.ip_country,'|',
               "isp:",self.ip_isp,'｜'
               "city:",self.ip_city)
         return
     def time_log(self,time_table):
+        start_time =  int(min(time_table))
+
+        self.judge_attack(time_table,start_time)
+
+        return
+    def time_log_test(self,time_table):
         start_time = "2021-08-04 00:00:00"
         end_time = "2021-08-05 00:00:00"
 
@@ -98,37 +103,50 @@ class LogParser:
         self.judge_attack(time_table,start_time,end_time)
 
         return
-    def judge_attack(self,time_table,start_time,end_time):
-        self.time_log_print(time_table,start_time,end_time)
+
+    def judge_attack(self,time_table,start_time):
+        self.time_log_print(time_table,start_time)
         return
-    def time_log_print(self, time_table,start_time,end_time):
+
+    def time_log_print(self, time_table,start_time):
+        end_time = int(time.time())
+        for __time in range(start_time,end_time,3600*24):
+            self.hr_time_log_print(time_table, __time)
+        return
+
+    def hr_time_log_print(self, time_table,start_time):
         hour_table = {0: 0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,
                       13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0,23:0}
         indice = 0
         hour_indice = 0
+        time_temp = time.localtime(start_time)
+        time_array = time.strftime("%Y-%m-%d %H:%M:%S", time_temp)
+
+        basic_hour_num = int(time_array[5:7])
 
         while indice<len(time_table) and hour_indice <24:
             _time = time_table[indice]
             temp = _time - start_time
             if temp < 3600 and temp > 0:
-                hour_table[hour_indice] += 1
+                hour_table[(hour_indice+basic_hour_num)%24] += 1
                 indice += 1
             elif temp < 0:
                 indice += 1
             else:
                 out_time = time.localtime(start_time)
+
                 out_time = time.strftime("%Y-%m-%d %H:%M:%S", out_time)
                 print(f"[✅] {out_time} count : {hour_table[hour_indice]}")
                 hour_indice += 1
                 start_time += 3600
-
+        print('--------------------------------')
         return
     def check(self,time_table):
         """
         此函数用来对self.visitor属性进行检查，比如统计带有攻击行为的ip
         :return:
         """
-        sensitive_word_dic = ['shell','backdoor','$',r'../']
+        sensitive_word_dic = ['shell','backdoor','$',r'../','chmod','wget','system','popen','exec','runtime']
         for item in self.ipList.values():
             url = item[0]['method_and_uri']
             for sensitive_word_item in sensitive_word_dic:
@@ -143,8 +161,6 @@ class LogParser:
         此函数用来按照格式生成统计日志
         :return:
         """
-        # self.time_log()
-
         return
     def run(self):
         time_table = self.parser()

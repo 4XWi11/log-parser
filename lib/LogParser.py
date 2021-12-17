@@ -80,15 +80,31 @@ class LogParser:
         self.ip_infor_output()
         return
     def ip_infor_output(self):
-        print("[✅]country:",self.ip_country,'|',
+        print("[✅ ]country:",self.ip_country,'|',
               "isp:",self.ip_isp,'｜'
               "city:",self.ip_city)
         return
+    def top10_ip_print(self):
+        iplis = list(self.ipList.values())
+
+        def get_ip_num(elem):
+            return len(elem)
+
+        def get_key(dict, value):
+            return [k for k, v in dict.items() if v == value]
+
+        iplis.sort(key = get_ip_num,reverse=True)
+
+        for i in range(0,len(iplis)):
+            if i >10:
+                break
+            ip = get_key(self.ipList,iplis[i])[0]
+            print(f"[✅ ]No.{i} ip is: ",ip,'  ',len(self.ipList[ip]))
+            self.ip_api(ip)
+        return
     def time_log(self,time_table):
         start_time =  int(min(time_table))
-
         self.judge_attack(time_table,start_time)
-
         return
     def time_log_test(self,time_table):
         start_time = "2021-08-04 00:00:00"
@@ -103,60 +119,62 @@ class LogParser:
         self.judge_attack(time_table,start_time)
 
         return
-
     def judge_attack(self,time_table,start_time):
         self.time_log_print(time_table,start_time)
         return
-
     def time_log_print(self, time_table,start_time):
         end_time = int(time.time())
         for __time in range(start_time,end_time,3600*24):
             self.hr_time_log_print(time_table, __time)
         return
-
     def hr_time_log_print(self, time_table,start_time):
         hour_table = {0: 0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,
                       13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0,23:0}
         indice = 0
         hour_indice = 0
+        error_lis = []
 
         if start_time > max(time_table):
             return
-
-        time_temp = time.localtime(start_time)
-        time_array = time.strftime("%Y-%m-%d %H:%M:%S", time_temp)
-
-        basic_hour_num = int(time_array[5:7])
 
         while indice<len(time_table) and hour_indice <24:
             _time = time_table[indice]
             temp = _time - start_time
             if temp < 3600 and temp > 0:
-                hour_table[(hour_indice+basic_hour_num)%24] += 1
+                hour_table[hour_indice] += 1
                 indice += 1
             elif temp < 0:
                 indice += 1
             else:
-                out_time = time.localtime(start_time)
-
+                out_time = time.localtime(start_time+3600)
                 out_time = time.strftime("%Y-%m-%d %H:%M:%S", out_time)
-                print(f"[✅] {out_time} count : {hour_table[hour_indice]}")
+
+                if hour_table[hour_indice] >300:
+                    error_lis.append(f"[❌ ddos ❌ scan] {out_time} count : {hour_table[hour_indice]}")
+                    # print(f"[❌] {out_time} count : {hour_table[hour_indice]}")
+                # else:
+                    # print(f"[✅ ] {out_time} count : {hour_table[hour_indice]}")
+
                 hour_indice += 1
                 start_time += 3600
 
-        print('--------------------------------')
+        if len(error_lis)>0:
+            # print('--------------------------------')
+            for error in error_lis:
+                print(error)
+            # print('--------------------------------')
         return
     def check(self,time_table):
         """
-        此函数用来对self.visitor属性进行检查，比如统计带有攻击行为的ip
         :return:
         """
-        sensitive_word_dic = ['shell','backdoor','$',r'../','chmod','wget','system','popen','exec','runtime']
+        sensitive_word_dic = ['shell','backdoor','$',r'../','chmod','wget','system','popen','exec ','runtime','bash','tcp']
         for item in self.ipList.values():
             url = item[0]['method_and_uri']
             for sensitive_word_item in sensitive_word_dic:
                 if sensitive_word_item in url:
                     print(f'[❌] May be the Attacker !!! {url}')
+
 
         self.time_log(time_table)
 
@@ -166,6 +184,7 @@ class LogParser:
         此函数用来按照格式生成统计日志
         :return:
         """
+        self.top10_ip_print()
         return
     def run(self):
         time_table = self.parser()

@@ -124,8 +124,13 @@ class LogParser:
         return
     def time_log_print(self, time_table,start_time):
         end_time = int(time.time())
+        error_list= []
         for __time in range(start_time,end_time,3600*24):
-            self.hr_time_log_print(time_table, __time)
+            error_list.append(self.hr_time_log_print(time_table, __time))
+
+        for error in error_list:
+            for err in error:
+                    print(err)
         return
     def hr_time_log_print(self, time_table,start_time):
         hour_table = {0: 0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,
@@ -135,7 +140,7 @@ class LogParser:
         error_lis = []
 
         if start_time > max(time_table):
-            return
+            return []
 
         while indice<len(time_table) and hour_indice <24:
             _time = time_table[indice]
@@ -151,19 +156,14 @@ class LogParser:
 
                 if hour_table[hour_indice] >300:
                     error_lis.append(f"[❌ ddos ❌ scan] {out_time} count : {hour_table[hour_indice]}")
-                    # print(f"[❌] {out_time} count : {hour_table[hour_indice]}")
-                # else:
-                    # print(f"[✅ ] {out_time} count : {hour_table[hour_indice]}")
+                    print(f"[❌] {out_time} count : {hour_table[hour_indice]}")
+                else:
+                    print(f"[✅] {out_time} count : {hour_table[hour_indice]}")
 
                 hour_indice += 1
                 start_time += 3600
 
-        if len(error_lis)>0:
-            # print('--------------------------------')
-            for error in error_lis:
-                print(error)
-            # print('--------------------------------')
-        return
+        return error_lis
     def check(self,time_table):
         """
         :return:
@@ -174,7 +174,6 @@ class LogParser:
             for sensitive_word_item in sensitive_word_dic:
                 if sensitive_word_item in url:
                     print(f'[❌] May be the Attacker !!! {url}')
-
 
         self.time_log(time_table)
 

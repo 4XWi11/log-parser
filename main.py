@@ -1,6 +1,6 @@
 import argparse
 from lib.LogParser import LogParser
-from config import REGEX
+from config import REGEX_LOG_APACHE
 
 
 def main():
@@ -13,15 +13,13 @@ def main():
 ''')
     arg = argparse.ArgumentParser()
     arg.add_argument("--path", help="The log you ready to analyse.", type=str)
-    arg.add_argument("--type", help="0->apache_log/ 1->apache_log", type=int)
     path = arg.parse_args().path
-    log_type = arg.parse_args().type
-    log_parser_new = LogParser(path, REGEX[log_type])
+    log_parser_new = LogParser(path, REGEX_LOG_APACHE)
     log_parser_new.run()
     print()
 
 def test():
-    log_parser_new = LogParser('access.txt',REGEX[0])
+    log_parser_new = LogParser('access.txt',REGEX_LOG_APACHE)
     log_parser_new.run()
     return
 
